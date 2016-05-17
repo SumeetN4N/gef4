@@ -18,6 +18,7 @@ import org.eclipse.gef4.geometry.planar.Arc;
 import org.eclipse.gef4.geometry.planar.Ellipse;
 import org.eclipse.gef4.geometry.planar.IGeometry;
 import org.eclipse.gef4.geometry.planar.IScalable;
+import org.eclipse.gef4.geometry.planar.IShape;
 import org.eclipse.gef4.geometry.planar.ITranslatable;
 import org.eclipse.gef4.geometry.planar.Pie;
 import org.eclipse.gef4.geometry.planar.Point;
@@ -74,11 +75,10 @@ import javafx.scene.shape.StrokeType;
  */
 public class GeometryNode<T extends IGeometry> extends Region {
 
-	private static final double GEOMETRY_MIN_WIDTH = 0.01;
-	private static final double GEOMETRY_MIN_HEIGHT = 0.01;
+	private static final double GEOMETRIC_SHAPE_MIN_WIDTH = 0.01;
+	private static final double GEOMETRIC_SHAPE_MIN_HEIGHT = 0.01;
 
 	private Path geometricShape = new Path();
-	// private Path layoutBoundsComputationShape = new Path();
 	private Path clickableAreaShape = null;
 	private DoubleProperty clickableAreaWidth = new SimpleDoubleProperty();
 	private ObjectProperty<T> geometryProperty = new SimpleObjectProperty<>();
@@ -93,11 +93,9 @@ public class GeometryNode<T extends IGeometry> extends Region {
 				layoutXProperty().removeListener(layoutXListener);
 				layoutYProperty().removeListener(layoutYListener);
 
-				// XXX: This is necessary to clear the size caches (we can not
-				// clear that explicitly)
-				requestLayout();
-
-				GeometryNode.super.resize(prefWidth(-1), prefHeight(-1));
+				// update layoutX, layoutY, as well as layout bounds
+				GeometryNode.super.resize(computePrefWidth(newValue),
+						computePrefHeight(newValue));
 				GeometryNode.super.relocate(
 						newValue.getBounds().getX() - getStrokeOffset()
 								- getInsets().getLeft(),
@@ -109,24 +107,8 @@ public class GeometryNode<T extends IGeometry> extends Region {
 				layoutXProperty().addListener(layoutXListener);
 				layoutYProperty().addListener(layoutYListener);
 
+				// update visuals to reflect changes
 				updateShapes();
-
-				// // TODO: remove
-				// if (getGeometry().getBounds().getWidth() != Math.max(
-				// newValue.getBounds().getWidth(), GEOMETRY_MIN_WIDTH)
-				// || getGeometry().getBounds().getHeight() != Math.max(
-				// newValue.getBounds().getHeight(),
-				// GEOMETRY_MIN_HEIGHT)) {
-				// System.err
-				// .println("Geometric bounds of passed in geometry: "
-				// + newValue.getBounds());
-				// System.err.println(
-				// "Geometric bounds (after relocate/resize): "
-				// + getGeometry().getBounds());
-				// throw new IllegalStateException(
-				// "The resize/relocate that is performed when changing the
-				// geometry should not lead to a manipulation of the geometry");
-				// }
 			}
 		}
 	};
@@ -179,12 +161,7 @@ public class GeometryNode<T extends IGeometry> extends Region {
 	 * Constructs a new {@link GeometryNode} without an {@link IGeometry}.
 	 */
 	public GeometryNode() {
-		// TODO: remove: for testing purposes only (requires J2SE-1.8)
-		// setBackground(new Background(new BackgroundFill(Color.GREY,
-		// CornerRadii.EMPTY, new Insets(0))));
-		// setBorder(
-		// new Border(new BorderStroke(Color.BLUE, BorderStrokeStyle.SOLID,
-		// CornerRadii.EMPTY, new BorderWidths(10))));
+		// ensure only our children are mouse-sensitive
 		setPickOnBounds(false);
 
 		setGeometricShape(geometricShape);
@@ -198,19 +175,17 @@ public class GeometryNode<T extends IGeometry> extends Region {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (geometryProperty.get() == null) {
+				T geometry = geometryProperty.get();
+				if (geometry == null) {
 					return;
 				}
-				Rectangle bounds = geometryProperty.get().getBounds();
-				if (bounds.isEmpty()) {
-					// TODO: Properly handle this by throwing exception?
-					return;
-				}
+
 				resize(prefWidth(-1), prefHeight(-1));
+				Rectangle geometricBounds = geometry.getBounds();
 				relocate(
-						bounds.getX() - getStrokeOffset()
+						geometricBounds.getX() - getStrokeOffset()
 								- getInsets().getLeft(),
-						bounds.getY() - getStrokeOffset()
+						geometricBounds.getY() - getStrokeOffset()
 								- getInsets().getTop());
 			}
 		});
@@ -220,19 +195,17 @@ public class GeometryNode<T extends IGeometry> extends Region {
 			public void changed(
 					ObservableValue<? extends StrokeType> observable,
 					StrokeType oldValue, StrokeType newValue) {
-				if (geometryProperty.get() == null) {
+				T geometry = geometryProperty.get();
+				if (geometry == null) {
 					return;
 				}
-				Rectangle bounds = geometryProperty.get().getBounds();
-				if (bounds.isEmpty()) {
-					// TODO: Properly handle this by throwing exception?
-					return;
-				}
+
 				resize(prefWidth(-1), prefHeight(-1));
+				Rectangle geometricBounds = geometry.getBounds();
 				relocate(
-						bounds.getX() - getStrokeOffset()
+						geometricBounds.getX() - getStrokeOffset()
 								- getInsets().getLeft(),
-						bounds.getY() - getStrokeOffset()
+						geometricBounds.getY() - getStrokeOffset()
 								- getInsets().getTop());
 			}
 		});
@@ -282,34 +255,56 @@ public class GeometryNode<T extends IGeometry> extends Region {
 		return clickableAreaWidth;
 	}
 
+	private double computeGeometryMinHeight(T geometry) {
+		return geometry instanceof IShape ? GEOMETRIC_SHAPE_MIN_HEIGHT : 0;
+	}
+
+	private double computeGeometryMinWidth(T geometry) {
+		return geometry instanceof IShape ? GEOMETRIC_SHAPE_MIN_WIDTH : 0;
+	}
+
 	@Override
 	protected double computeMinHeight(double width) {
-		return GEOMETRY_MIN_HEIGHT + getInsets().getTop()
+		return computeMinHeight(geometryProperty.get());
+	}
+
+	private double computeMinHeight(T geometry) {
+		return computeGeometryMinHeight(geometry) + 2 * getStrokeOffset() + getInsets().getTop()
 				+ getInsets().getBottom();
 	}
 
 	@Override
 	protected double computeMinWidth(double height) {
-		return GEOMETRY_MIN_WIDTH + getInsets().getLeft()
+		return computeMinWidth(geometryProperty.get());
+	}
+
+	private double computeMinWidth(T geometry) {
+		return computeGeometryMinWidth(geometry) + 2 * getStrokeOffset() + getInsets().getLeft()
 				+ getInsets().getRight();
 	}
 
 	@Override
 	protected double computePrefHeight(double width) {
+		return computePrefHeight(geometryProperty.get());
+	}
+
+	private double computePrefHeight(T geometry) {
 		double geometricPrefHeight = Math.max(
-				geometryProperty.get() != null
-						? geometryProperty.get().getBounds().getHeight() : 0,
-				GEOMETRY_MIN_HEIGHT);
+				geometry != null ? geometry.getBounds().getHeight() : 0,
+				computeGeometryMinHeight(geometry));
 		return geometricPrefHeight + 2 * getStrokeOffset()
 				+ getInsets().getTop() + getInsets().getBottom();
 	}
 
 	@Override
 	protected double computePrefWidth(double height) {
+		return computePrefWidth(geometryProperty.get());
+	}
+
+	private double computePrefWidth(T geometry) {
 		double geometricPrefWidth = Math.max(
-				geometryProperty.get() != null
-						? geometryProperty.get().getBounds().getWidth() : 0,
-				GEOMETRY_MIN_WIDTH);
+				geometry != null ? geometry.getBounds().getWidth() : 0,
+				computeGeometryMinWidth(geometry));
 		return geometricPrefWidth + 2 * getStrokeOffset()
 				+ getInsets().getLeft() + getInsets().getRight();
 	}
@@ -398,8 +393,7 @@ public class GeometryNode<T extends IGeometry> extends Region {
 	}
 
 	private PathElement[] getPathElements() {
-		return Geometry2Shape
-				.toPathElements(geometryProperty.getValue().toPath());
+		return Geometry2Shape.toPathElements(geometryProperty.get().toPath());
 	}
 
 	/**
@@ -552,7 +546,8 @@ public class GeometryNode<T extends IGeometry> extends Region {
 	private void relocateGeometryToMatchLayoutXY(double layoutX,
 			double layoutY) {
 		// guard against null geometry
-		if (geometryProperty.getValue() == null) {
+		T geometry = geometryProperty.get();
+		if (geometry == null) {
 			return;
 		}
 
@@ -598,16 +593,19 @@ public class GeometryNode<T extends IGeometry> extends Region {
 	 */
 	@SuppressWarnings("unchecked")
 	public void resizeGeometry(double width, double height) {
-		if (width < GEOMETRY_MIN_WIDTH) {
-			throw new IllegalArgumentException("Cannot resize geometry below "
-					+ minWidth(-1) + ", so " + width + " is no valid width.");
-		}
-		if (height < GEOMETRY_MIN_HEIGHT) {
-			throw new IllegalArgumentException(
-					"Cannot resize geometry below " + minHeight(-1) + ", so "
-							+ height + " is no valid height.");
-		}
 		T geometry = geometryProperty.getValue();
+		double geometryMinWidth = computeGeometryMinWidth(geometry);
+		if (width < geometryMinWidth) {
+			throw new IllegalArgumentException(
+					"Cannot resize geometry below " + geometryMinWidth + ", so "
+							+ width + " is no valid width.");
+		}
+		double geometryMinHeight = computeGeometryMinHeight(geometry);
+		if (height < geometryMinHeight) {
+			throw new IllegalArgumentException(
+					"Cannot resize geometry below " + geometryMinHeight
+							+ ", so " + height + " is no valid height.");
+		}
 		if (geometry instanceof Rectangle) {
 			geometryProperty.set((T) ((Rectangle) geometry).getCopy()
 					.setSize(width, height));
@@ -625,8 +623,10 @@ public class GeometryNode<T extends IGeometry> extends Region {
 					.set((T) ((Arc) geometry).getCopy().setSize(width, height));
 		} else {
 			Rectangle geometricBounds = geometry.getBounds();
-			double sx = width / geometricBounds.getWidth();
-			double sy = height / geometricBounds.getHeight();
+			double sx = geometricBounds.getWidth() == 0 ? 1
+					: width / geometricBounds.getWidth();
+			double sy = geometricBounds.getHeight() == 0 ? 1
+					: height / geometricBounds.getHeight();
 			if (geometry instanceof IScalable) {
 				// Line, Polyline, PolyBezier, BezierCurve, CubicCurve,
 				// QuadraticCurve, Polygon, CurvedPolygon, Region, and Ring are
@@ -652,7 +652,8 @@ public class GeometryNode<T extends IGeometry> extends Region {
 
 		// guard against null geometry
 		// TODO: check if required
-		if (geometryProperty.getValue() == null) {
+		T geometry = geometryProperty.get();
+		if (geometry == null) {
 			return;
 		}
 
@@ -667,13 +668,15 @@ public class GeometryNode<T extends IGeometry> extends Region {
 		double strokeOffset = getStrokeOffset();
 		double geometryWidth = layoutBoundsWidth - getInsets().getLeft()
 				- getInsets().getRight() - 2 * strokeOffset;
-		if (geometryWidth < GEOMETRY_MIN_WIDTH) {
-			geometryWidth = GEOMETRY_MIN_WIDTH;
+		double geometryMinWidth = computeGeometryMinWidth(geometry);
+		if (geometryWidth < geometryMinWidth) {
+			geometryWidth = geometryMinWidth;
 		}
 		double geometryHeight = layoutBoundsHeight - getInsets().getTop()
 				- getInsets().getBottom() - 2 * strokeOffset;
-		if (geometryHeight < GEOMETRY_MIN_HEIGHT) {
-			geometryHeight = GEOMETRY_MIN_HEIGHT;
+		double geometryMinHeight = computeGeometryMinHeight(geometry);
+		if (geometryHeight < geometryMinHeight) {
+			geometryHeight = geometryMinHeight;
 		}
 		// System.out.println(
 		// "Resize Geometry to " + geometryWidth + ", " + geometryHeight);

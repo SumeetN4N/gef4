@@ -15,6 +15,7 @@ package org.eclipse.gef4.fx.tests;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.gef4.fx.nodes.GeometryNode;
+import org.eclipse.gef4.geometry.planar.Polyline;
 import org.eclipse.gef4.geometry.planar.RoundedRectangle;
 import org.junit.Test;
 
@@ -74,6 +75,16 @@ public class GeometryNodeTests {
 		assertEquals(35, n.getLayoutY(), 0);
 		assertEquals(30, n.getGeometry().getBounds().getX(), 0);
 		assertEquals(40, n.getGeometry().getBounds().getY(), 0);
+	}
+	
+	@Test
+	public void resizePolylineNode(){
+		GeometryNode<Polyline> n = new GeometryNode<>();
+		//Polyline: (19.02538299560547, 30.438175201416016) -> (19.02538299560547, 108.58389282226562)
+		n.setGeometry(new Polyline(19.02538299560547, 30.438175201416016, 19.02538299560547, 108.58389282226562));
+		n.setStrokeWidth(3.5);
+		n.setStrokeType(StrokeType.CENTERED);
+		System.out.println(n.getGeometry().getBounds());
 	}
 
 	@Test
