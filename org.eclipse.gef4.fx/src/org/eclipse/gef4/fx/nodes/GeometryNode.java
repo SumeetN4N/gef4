@@ -1014,27 +1014,14 @@ public class GeometryNode<T extends IGeometry> extends Region {
 		} else {
 			updateShapes(geometricShape);
 		}
-		// relocate so shapes are centered (required to compensate stroke and
-		// insets)
-		geometricShape.relocate(
-				(getWidth() - geometricShape.getLayoutBounds().getWidth()) / 2,
-				(getHeight() - geometricShape.getLayoutBounds().getHeight())
-						/ 2);
-		if (clickableAreaShape != null) {
-			clickableAreaShape.relocate(
-					(getWidth()
-							- clickableAreaShape.getLayoutBounds().getWidth())
-							/ 2,
-					(getHeight()
-							- clickableAreaShape.getLayoutBounds().getHeight())
-							/ 2);
-		}
 	}
 
 	private void updateShapes(Path... paths) {
 		PathElement[] pathElements = getPathElements();
 		for (Path p : paths) {
 			p.getElements().setAll(pathElements);
+			p.relocate((getWidth() - p.getLayoutBounds().getWidth()) / 2,
+					(getHeight() - p.getLayoutBounds().getHeight()) / 2);
 		}
 	}
 
