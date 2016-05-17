@@ -126,17 +126,12 @@ public class NodeUtils {
 		} else if (visual instanceof GeometryNode) {
 			// XXX: The geometry's position is specified relative to the
 			// GeometryNode's layout bounds (which are fixed as (0, 0, width,
-			// height) and includes the layoutX, layoutY, as well as the insets
-			// and stroke (which we have to compensate here)
+			// height) and includes the layoutX, layoutY (which we have to
+			// compensate here)
 			GeometryNode<?> geometryNode = (GeometryNode<?>) visual;
-			Bounds layoutBounds = geometryNode.getLayoutBounds();
-			IGeometry geometry = geometryNode.getGeometry();
-			Rectangle geometryBounds = geometry.getBounds();
-			return geometry.getTransformed(new AffineTransform().translate(
-					-geometryNode.getLayoutX() + (layoutBounds.getWidth()
-							- geometryBounds.getWidth()) / 2,
-					-geometryNode.getLayoutY() + (layoutBounds.getHeight()
-							- geometryBounds.getHeight()) / 2));
+			return ((IGeometry) geometryNode.getGeometry()).getTransformed(
+					new AffineTransform().translate(-geometryNode.getLayoutX(),
+							-geometryNode.getLayoutY()));
 		} else if (visual instanceof Shape && !(visual instanceof Text)
 				&& !(visual instanceof SVGPath)) {
 			return Shape2Geometry.toGeometry((Shape) visual);
