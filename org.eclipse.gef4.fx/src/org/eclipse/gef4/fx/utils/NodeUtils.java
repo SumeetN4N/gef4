@@ -129,9 +129,16 @@ public class NodeUtils {
 			// height) and includes the layoutX, layoutY (which we have to
 			// compensate here)
 			GeometryNode<?> geometryNode = (GeometryNode<?>) visual;
-			return ((IGeometry) geometryNode.getGeometry()).getTransformed(
-					new AffineTransform().translate(-geometryNode.getLayoutX(),
-							-geometryNode.getLayoutY()));
+			IGeometry geometry = geometryNode.getGeometry();
+			if (geometry != null) {
+				return geometry.getTransformed(new AffineTransform().translate(
+						-geometryNode.getLayoutX(),
+						-geometryNode.getLayoutY()));
+			} else {
+				// if the geometry node has no geometry (yet), return an empty
+				// geometry
+				return new Rectangle();
+			}
 		} else if (visual instanceof Shape && !(visual instanceof Text)
 				&& !(visual instanceof SVGPath)) {
 			return Shape2Geometry.toGeometry((Shape) visual);
