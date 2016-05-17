@@ -111,21 +111,22 @@ public class GeometryNode<T extends IGeometry> extends Region {
 
 				updateShapes();
 
-				// TODO: remove
-				if (getGeometry().getBounds().getWidth() != Math.max(
-						newValue.getBounds().getWidth(), GEOMETRY_MIN_WIDTH)
-						|| getGeometry().getBounds().getHeight() != Math.max(
-								newValue.getBounds().getHeight(),
-								GEOMETRY_MIN_HEIGHT)) {
-					System.err
-							.println("Geometric bounds of passed in geometry: "
-									+ newValue.getBounds());
-					System.err.println(
-							"Geometric bounds (after relocate/resize): "
-									+ getGeometry().getBounds());
-					throw new IllegalStateException(
-							"The resize/relocate that is performed when changing the geometry should not lead to a manipulation of the geometry");
-				}
+				// // TODO: remove
+				// if (getGeometry().getBounds().getWidth() != Math.max(
+				// newValue.getBounds().getWidth(), GEOMETRY_MIN_WIDTH)
+				// || getGeometry().getBounds().getHeight() != Math.max(
+				// newValue.getBounds().getHeight(),
+				// GEOMETRY_MIN_HEIGHT)) {
+				// System.err
+				// .println("Geometric bounds of passed in geometry: "
+				// + newValue.getBounds());
+				// System.err.println(
+				// "Geometric bounds (after relocate/resize): "
+				// + getGeometry().getBounds());
+				// throw new IllegalStateException(
+				// "The resize/relocate that is performed when changing the
+				// geometry should not lead to a manipulation of the geometry");
+				// }
 			}
 		}
 	};
@@ -184,6 +185,7 @@ public class GeometryNode<T extends IGeometry> extends Region {
 		// setBorder(
 		// new Border(new BorderStroke(Color.BLUE, BorderStrokeStyle.SOLID,
 		// CornerRadii.EMPTY, new BorderWidths(10))));
+		setPickOnBounds(false);
 
 		setGeometricShape(geometricShape);
 
