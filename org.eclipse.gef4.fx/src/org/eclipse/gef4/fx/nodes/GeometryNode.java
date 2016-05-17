@@ -87,15 +87,15 @@ public class GeometryNode<T extends IGeometry> extends Region {
 		@Override
 		public void changed(ObservableValue<? extends T> observable, T oldValue,
 				T newValue) {
-			if (newValue != null && !newValue.getBounds().isEmpty()) {
+			if (newValue != null) {
+				// XXX: This is necessary to clear the size caches (we can not
+				// clear that explicitly)
+				requestLayout();
+
 				widthProperty().removeListener(widthListener);
 				heightProperty().removeListener(heightListener);
 				layoutXProperty().removeListener(layoutXListener);
 				layoutYProperty().removeListener(layoutYListener);
-
-				// XXX: This is necessary to clear the size caches (we can not
-				// clear that explicitly)
-				requestLayout();
 
 				GeometryNode.super.resize(prefWidth(-1), prefHeight(-1));
 				GeometryNode.super.relocate(
@@ -1024,5 +1024,4 @@ public class GeometryNode<T extends IGeometry> extends Region {
 					(getHeight() - p.getLayoutBounds().getHeight()) / 2);
 		}
 	}
-
 }
