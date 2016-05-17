@@ -32,21 +32,118 @@ public class GeometryNodeTests {
 		n.setFill(Color.RED);
 		n.setStrokeWidth(5);
 		n.setStrokeType(StrokeType.OUTSIDE);
+		n.setGeometry(new RoundedRectangle(30, 40, 30, 40, 20, 20));
 		
-		n.setGeometry(new RoundedRectangle(50, 50, 30, 40, 20, 20));
 		assertEquals(n.getGeometry().getBounds().getWidth(), 30, 0);
 		assertEquals(n.getGeometry().getBounds().getHeight(), 40, 0);
 		assertEquals(40.0, n.getWidth(), 0);
 		assertEquals(50.0, n.getHeight(), 0);
+		assertEquals(25, n.getLayoutX(), 0);
+		assertEquals(35, n.getLayoutY(), 0);
+		assertEquals(30, n.getGeometry().getBounds().getX(), 0);
+		assertEquals(40, n.getGeometry().getBounds().getY(), 0);
 		
 		n.resizeGeometry(50, 60);
 		assertEquals(n.getGeometry().getBounds().getWidth(), 50, 0);
 		assertEquals(n.getGeometry().getBounds().getHeight(), 60, 0);
 		assertEquals(60.0, n.getWidth(), 0);
 		assertEquals(70.0, n.getHeight(), 0);
+		assertEquals(25, n.getLayoutX(), 0);
+		assertEquals(35, n.getLayoutY(), 0);
+		assertEquals(30, n.getGeometry().getBounds().getX(), 0);
+		assertEquals(40, n.getGeometry().getBounds().getY(), 0);
+	}
+	
+	/**
+	 * Ensures setting/resizing the geometry will resize the visuals
+	 */
+	@Test
+	public void resizeGeometryOnResize() {
+		GeometryNode<RoundedRectangle> n = new GeometryNode<>();
+		n.setFill(Color.RED);
+		n.setStrokeWidth(5);
+		n.setStrokeType(StrokeType.OUTSIDE);
+		n.setGeometry(new RoundedRectangle(30, 40, 30, 40, 20, 20));
+		
+		n.resize(30, 40);
+		assertEquals(n.getGeometry().getBounds().getWidth(), 20, 0);
+		assertEquals(n.getGeometry().getBounds().getHeight(), 30, 0);
+		assertEquals(30.0, n.getWidth(), 0);
+		assertEquals(40.0, n.getHeight(), 0);
+		assertEquals(25, n.getLayoutX(), 0);
+		assertEquals(35, n.getLayoutY(), 0);
+		assertEquals(30, n.getGeometry().getBounds().getX(), 0);
+		assertEquals(40, n.getGeometry().getBounds().getY(), 0);
 	}
 
-	public void resizeOnStrokeWidthAndTypeChange() {
+	@Test
+	public void resizeRelocateOnStrokeWidthAndTypeChange() {
+		GeometryNode<RoundedRectangle> n = new GeometryNode<>();
+		n.setGeometry(new RoundedRectangle(30, 40, 30, 40, 20, 20));
+		
+		assertEquals(29.5, n.getLayoutX(), 0);
+		assertEquals(39.5, n.getLayoutY(), 0);
+		assertEquals(30, n.getGeometry().getBounds().getX(), 0);
+		assertEquals(40, n.getGeometry().getBounds().getY(), 0);
+		
+		n.setFill(Color.RED);
+		n.setStrokeWidth(5);
+		n.setStrokeType(StrokeType.OUTSIDE);
 
+		assertEquals(n.getGeometry().getBounds().getWidth(), 30, 0);
+		assertEquals(n.getGeometry().getBounds().getHeight(), 40, 0);
+		assertEquals(40.0, n.getWidth(), 0);
+		assertEquals(50.0, n.getHeight(), 0);
+		assertEquals(25, n.getLayoutX(), 0);
+		assertEquals(35, n.getLayoutY(), 0);
+		assertEquals(30, n.getGeometry().getBounds().getX(), 0);
+		assertEquals(40, n.getGeometry().getBounds().getY(), 0);
+	}
+	
+	@Test
+	public void relocateOnGeometryChange(){
+		GeometryNode<RoundedRectangle> n = new GeometryNode<>();
+		n.setFill(Color.RED);
+		n.setStrokeWidth(5);
+		n.setStrokeType(StrokeType.OUTSIDE);
+		n.setGeometry(new RoundedRectangle(30, 40, 30, 40, 20, 20));
+		
+		assertEquals(n.getGeometry().getBounds().getX(), 30, 0);
+		assertEquals(n.getGeometry().getBounds().getY(), 40, 0);
+		assertEquals(25.0, n.getLayoutX(), 0);
+		assertEquals(35.0, n.getLayoutY(), 0);
+		assertEquals(n.getGeometry().getBounds().getWidth(), 30, 0);
+		assertEquals(n.getGeometry().getBounds().getHeight(), 40, 0);
+		assertEquals(40.0, n.getWidth(), 0);
+		assertEquals(50.0, n.getHeight(), 0);
+		
+		n.relocateGeometry(50, 60);
+		assertEquals(n.getGeometry().getBounds().getX(), 50, 0);
+		assertEquals(n.getGeometry().getBounds().getY(), 60, 0);
+		assertEquals(45.0, n.getLayoutX(), 0);
+		assertEquals(55.0, n.getLayoutY(), 0);
+		assertEquals(n.getGeometry().getBounds().getWidth(), 30, 0);
+		assertEquals(n.getGeometry().getBounds().getHeight(), 40, 0);
+		assertEquals(40.0, n.getWidth(), 0);
+		assertEquals(50.0, n.getHeight(), 0);
+	}
+	
+	@Test
+	public void relocateGeometryOnRelocate(){
+		GeometryNode<RoundedRectangle> n = new GeometryNode<>();
+		n.setFill(Color.RED);
+		n.setStrokeWidth(5);
+		n.setStrokeType(StrokeType.OUTSIDE);
+		n.setGeometry(new RoundedRectangle(30, 40, 30, 40, 20, 20));
+		n.relocate(30, 40);
+		
+		assertEquals(n.getGeometry().getBounds().getX(), 35, 0);
+		assertEquals(n.getGeometry().getBounds().getY(), 45, 0);
+		assertEquals(30.0, n.getLayoutX(), 0);
+		assertEquals(40.0, n.getLayoutY(), 0);
+		assertEquals(n.getGeometry().getBounds().getWidth(), 30, 0);
+		assertEquals(n.getGeometry().getBounds().getHeight(), 40, 0);
+		assertEquals(40.0, n.getWidth(), 0);
+		assertEquals(50.0, n.getHeight(), 0);
 	}
 }

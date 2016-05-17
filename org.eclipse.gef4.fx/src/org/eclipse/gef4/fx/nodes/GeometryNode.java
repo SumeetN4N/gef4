@@ -169,11 +169,19 @@ public class GeometryNode<T extends IGeometry> extends Region {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
 					Number oldValue, Number newValue) {
-				if (geometryProperty.get() == null
-						|| geometryProperty.get().getBounds().isEmpty()) {
+				if (geometryProperty.get() == null) {
+					return;
+				}
+				Rectangle bounds = geometryProperty.get().getBounds();
+				if (bounds.isEmpty()) {
 					return;
 				}
 				resize(prefWidth(-1), prefHeight(-1));
+				relocate(
+						bounds.getX() - getStrokeOffset()
+								- getInsets().getLeft(),
+						bounds.getY() - getStrokeOffset()
+								- getInsets().getTop());
 			}
 		});
 		strokeTypeProperty().addListener(new ChangeListener<StrokeType>() {
@@ -182,13 +190,32 @@ public class GeometryNode<T extends IGeometry> extends Region {
 			public void changed(
 					ObservableValue<? extends StrokeType> observable,
 					StrokeType oldValue, StrokeType newValue) {
-				if (geometryProperty.get() == null
-						|| geometryProperty.get().getBounds().isEmpty()) {
+				if (geometryProperty.get() == null) {
+					return;
+				}
+				Rectangle bounds = geometryProperty.get().getBounds();
+				if (bounds.isEmpty()) {
 					return;
 				}
 				resize(prefWidth(-1), prefHeight(-1));
+				relocate(
+						bounds.getX() - getStrokeOffset()
+								- getInsets().getLeft(),
+						bounds.getY() - getStrokeOffset()
+								- getInsets().getTop());
 			}
 		});
+
+		// // TODO: enable for JavaFX-8 (using reflection until we drop support
+		// for java-1.7)
+		// insetsProperty().addListener(new ChangeListener<Insets>() {
+		//
+		// @Override
+		// public void changed(ObservableValue<? extends Insets> observable,
+		// Insets oldValue, Insets newValue) {
+		// resize(prefWidth(-1), prefHeight(-1));
+		// }
+		// });
 
 		// resize geometry in case width and height change
 		widthProperty().addListener(widthListener);
