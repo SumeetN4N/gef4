@@ -93,6 +93,11 @@ public class GeometryNode<T extends IGeometry> extends Region {
 				layoutXProperty().removeListener(layoutXListener);
 				layoutYProperty().removeListener(layoutYListener);
 
+				// XXX: We need to clear the size caches; even if we use
+				// computed sizes in the following, if not doing so the super
+				// call will use stale values.
+				requestLayout();
+
 				// update layoutX, layoutY, as well as layout bounds
 				GeometryNode.super.resize(computePrefWidth(newValue),
 						computePrefHeight(newValue));
@@ -269,8 +274,8 @@ public class GeometryNode<T extends IGeometry> extends Region {
 	}
 
 	private double computeMinHeight(T geometry) {
-		return computeGeometryMinHeight(geometry) + 2 * getStrokeOffset() + getInsets().getTop()
-				+ getInsets().getBottom();
+		return computeGeometryMinHeight(geometry) + 2 * getStrokeOffset()
+				+ getInsets().getTop() + getInsets().getBottom();
 	}
 
 	@Override
@@ -279,8 +284,8 @@ public class GeometryNode<T extends IGeometry> extends Region {
 	}
 
 	private double computeMinWidth(T geometry) {
-		return computeGeometryMinWidth(geometry) + 2 * getStrokeOffset() + getInsets().getLeft()
-				+ getInsets().getRight();
+		return computeGeometryMinWidth(geometry) + 2 * getStrokeOffset()
+				+ getInsets().getLeft() + getInsets().getRight();
 	}
 
 	@Override
